@@ -626,42 +626,60 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, '错误', f'删除网站 "{website["name"]}" 失败')
     
     def on_import_clicked(self):
-        # 创建导入对话框
-        from ui.dialogs.import_dialog import ImportDialog
-        dialog = ImportDialog(self)
-        if dialog.exec():
-            # 获取导入的数据
-            imported_data = dialog.get_imported_data()
-            if imported_data:
-                # 导入数据到数据库
-                categories_added = 0
-                websites_added = 0
-                
-                # 导入分类
-                for category in imported_data.get('categories', []):
-                    if self.db.add_category(category):
-                        categories_added += 1
-                
-                # 导入网站
-                for website in imported_data.get('websites', []):
-                    if self.db.add_website(website):
-                        websites_added += 1
-                
-                # 显示导入结果
-                QMessageBox.information(self, '导入成功', 
-                                       f'成功导入 {categories_added} 个分类和 {websites_added} 个网站')
-                
-                # 重新加载数据
-                self.category_list.load_categories(self.db.get_all_categories())
-                self.load_websites(self.current_category_id)
-            else:
-                QMessageBox.warning(self, '导入失败', '导入数据格式不正确或为空')
+        try:
+            # 创建导入对话框
+            from ui.dialogs.import_dialog import ImportDialog
+            dialog = ImportDialog(self)
+            if dialog.exec():
+                try:
+                    # 获取导入的数据
+                    imported_data = dialog.get_imported_data()
+                    if imported_data:
+                        # 导入数据到数据库
+                        categories_added = 0
+                        websites_added = 0
+                        
+                        # 导入分类
+                        for category in imported_data.get('categories', []):
+                            if self.db.add_category(category):
+                                categories_added += 1
+                        
+                        # 导入网站
+                        for website in imported_data.get('websites', []):
+                            if self.db.add_website(website):
+                                websites_added += 1
+                        
+                        # 显示导入结果
+                        QMessageBox.information(self, '导入成功', 
+                                              f'成功导入 {categories_added} 个分类和 {websites_added} 个网站')
+                        
+                        # 重新加载数据
+                        self.category_list.load_categories(self.db.get_all_categories())
+                        self.load_websites(self.current_category_id)
+                    else:
+                        QMessageBox.warning(self, '导入失败', '导入数据格式不正确或为空')
+                except Exception as e:
+                    import traceback
+                    error_details = traceback.format_exc()
+                    QMessageBox.critical(self, '导入错误', 
+                                       f'处理导入数据时发生错误: {str(e)}\n\n请确保数据格式正确，并且所有必要的字段都存在。')
+                    print(f"导入错误详情: {error_details}")
+        except Exception as e:
+            QMessageBox.critical(self, '导入错误', 
+                               f'创建导入对话框时发生错误: {str(e)}\n\n请检查系统环境和依赖项是否正确安装。')
     
     def on_export_clicked(self):
-        # 创建导出对话框
-        from ui.dialogs.export_dialog import ExportDialog
-        dialog = ExportDialog(self.db, self)
-        dialog.exec()
+        try:
+            # 创建导出对话框
+            from ui.dialogs.export_dialog import ExportDialog
+            dialog = ExportDialog(self.db, self)
+            dialog.exec()
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            QMessageBox.critical(self, '导出错误', 
+                               f'创建导出对话框时发生错误: {str(e)}\n\n请检查系统环境和依赖项是否正确安装。')
+            print(f"导出错误详情: {error_details}")
         
     def on_theme_clicked(self):
         # 创建主题菜单

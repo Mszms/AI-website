@@ -539,26 +539,74 @@ class ImportDialog(BaseDialog):
         """解析Excel文件数据"""
         try:
             # 读取分类和网站数据
-            categories_df = pd.read_excel(file_path, sheet_name='categories')
-            websites_df = pd.read_excel(file_path, sheet_name='websites')
-            
-            # 转换为字典列表
-            categories = categories_df.to_dict('records')
-            websites = websites_df.to_dict('records')
-            
-            # 处理分类数据
-            processed_categories, category_name_to_id, category_id_map = self.process_categories(categories)
-            
-            # 处理网站数据
-            processed_websites, _ = self.process_websites(websites, category_name_to_id, category_id_map)
-            
-            self.imported_data = {
-                'categories': processed_categories,
-                'websites': processed_websites
-            }
+            try:
+                # 尝试读取包含两个sheet的Excel文件
+                categories_df = pd.read_excel(file_path, sheet_name='categories')
+                websites_df = pd.read_excel(file_path, sheet_name='websites')
+                
+                # 转换为字典列表
+                categories = categories_df.to_dict('records')
+                websites = websites_df.to_dict('records')
+                
+                # 处理分类数据
+                processed_categories, category_name_to_id, category_id_map = self.process_categories(categories)
+                
+                # 处理网站数据
+                processed_websites, _ = self.process_websites(websites, category_name_to_id, category_id_map)
+                
+                self.imported_data = {
+                    'categories': processed_categories,
+                    'websites': processed_websites
+                }
+                
+                self.preview_text.append(f"\n成功读取Excel文件，包含 {len(processed_categories)} 个分类和 {len(processed_websites)} 个网站")
+                
+            except ValueError as sheet_error:
+                # 如果找不到指定的sheet，尝试读取默认sheet
+                self.preview_text.setText(f"警告: Excel文件格式不符合要求 ({str(sheet_error)})，尝试读取默认sheet...")
+                
+                df = pd.read_excel(file_path)
+                # 检查是否包含必要的列
+                headers = list(df.columns)
+                
+                # 区分分类和网站数据
+                categories = []
+                websites = []
+                
+                # 检查是否为分类或网站数据
+                is_category = any(col in headers for col in ['name', 'icon', 'description']) and 'url' not in headers
+                is_website = any(col in headers for col in ['name', 'url'])
+                
+                if is_category:
+                    for _, row in df.iterrows():
+                        record = row.to_dict()
+                        if 'name' in record and record['name'] and not pd.isna(record['name']):
+                            categories.append(record)
+                    self.preview_text.append(f"从单sheet Excel文件中提取了 {len(categories)} 个分类记录")
+                elif is_website:
+                    for _, row in df.iterrows():
+                        record = row.to_dict()
+                        if 'name' in record and record['name'] and not pd.isna(record['name']):
+                            websites.append(record)
+                    self.preview_text.append(f"从单sheet Excel文件中提取了 {len(websites)} 个网站记录")
+                else:
+                    raise ValueError("Excel文件格式不正确，无法识别为分类或网站数据")
+                
+                # 处理分类数据
+                processed_categories, category_name_to_id, category_id_map = self.process_categories(categories)
+                
+                # 处理网站数据
+                processed_websites, _ = self.process_websites(websites, category_name_to_id, category_id_map)
+                
+                self.imported_data = {
+                    'categories': processed_categories,
+                    'websites': processed_websites
+                }
             
         except Exception as e:
-            self.preview_text.setText(f"解析Excel文件失败: {str(e)}")
+            import traceback
+            error_details = traceback.format_exc()
+            self.preview_text.setText(f"解析Excel文件失败: {str(e)}\n\n详细错误信息:\n{error_details}")
             self.imported_data = None
     
     def parse_json_data(self, file_path, encoding='utf-8'):

@@ -31,13 +31,46 @@ for src, dst in data_files:
 
 # 需要显式包含的库
 hidden_imports = [
+    # pandas相关依赖
+    '--hidden-import=pandas',
+    '--hidden-import=pandas._libs.tslibs.base',
+    '--hidden-import=pandas._libs.tslibs.timedeltas',
+    '--hidden-import=pandas._libs.tslibs.nattype',
+    '--hidden-import=pandas._libs.tslibs.np_datetime',
+    '--hidden-import=pandas._libs.tslibs.offsets',
+    '--hidden-import=pandas._libs.tslibs.timestamps',
+    '--hidden-import=pandas._libs.tslibs.parsing',
+    '--hidden-import=pandas._libs.tslibs.period',
+    '--hidden-import=pandas._libs.tslibs.strptime',
+    '--hidden-import=pandas._libs.tslibs.conversion',
+    '--hidden-import=pandas.io.excel._openpyxl',
+    '--hidden-import=pandas.io.excel._base',
+    '--hidden-import=pandas.io.excel',
+    '--hidden-import=pandas.io.formats.excel',
+    '--hidden-import=pandas.io.parsers',
+    '--hidden-import=pandas.io.common',
+    # openpyxl相关依赖
     '--hidden-import=openpyxl',
     '--hidden-import=openpyxl.cell',
     '--hidden-import=openpyxl.workbook',
     '--hidden-import=openpyxl.reader.excel',
     '--hidden-import=openpyxl.styles',
+    '--hidden-import=openpyxl.utils',
+    '--hidden-import=openpyxl.utils.datetime',
+    '--hidden-import=openpyxl.writer.excel',
+    '--hidden-import=openpyxl.writer.worksheet',
+    '--hidden-import=openpyxl.worksheet',
+    '--hidden-import=openpyxl.worksheet.worksheet',
+    '--hidden-import=openpyxl.cell.cell',
+    # 其他依赖
+    '--hidden-import=chardet',
+    '--hidden-import=numpy',
     '--hidden-import=pymongo',
-    '--hidden-import=qtawesome'
+    '--hidden-import=qtawesome',
+    '--hidden-import=PIL',
+    '--hidden-import=json',
+    '--hidden-import=bson',
+    '--hidden-import=bson.objectid'
 ]
 
 # 构建PyInstaller命令
